@@ -14,6 +14,7 @@ import (
 	"os"
 	"strings"
 	"time"
+	"net"
 
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 
@@ -226,11 +227,23 @@ func main() {
 		}()
 	}
 
-	transport := &http.Transport{TLSClientConfig: tlsConfig}
+	transport := &http.Transport {
+		TLSClientConfig: tlsConfig,
+		DialContext: (&net.Dialer{
+                Timeout:   10 * time.Second,
+                KeepAlive: 30 * time.Second,
+                DualStack: true,
+        }).DialContext,
+		MaxIdleConns:          2,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
+	}
 
 	for {
 		err := loop(coordinator, transport)
 		if err != nil {
+			level.Error(logger).Log("msg", "Error in communicating with server", "err", err)
 			pollErrorCounter.Inc()
 			time.Sleep(time.Second) // Don't pound the server. TODO: Randomised exponential backoff.
 		}
