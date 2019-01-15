@@ -14,7 +14,6 @@ import (
 	"os"
 	"strings"
 	"time"
-	"net"
 
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 
@@ -142,7 +141,7 @@ func (c *Coordinator) doPush(resp *http.Response, origRequest *http.Request, cli
 }
 
 func loop(c Coordinator, t *http.Transport) error {
-	client := &http.Client{Transport: t}
+	client := &http.Client{Transport: t, Timeout: 10 * time.Second}
 	base, err := url.Parse(*proxyURL)
 	if err != nil {
 		level.Error(c.logger).Log("msg", "Error parsing url:", "err", err)
@@ -229,15 +228,6 @@ func main() {
 
 	transport := &http.Transport {
 		TLSClientConfig: tlsConfig,
-		DialContext: (&net.Dialer{
-            Timeout:   10 * time.Second,
-            KeepAlive: 30 * time.Second,
-            DualStack: false,
-        }).DialContext,
-		MaxIdleConns:          100,
-		IdleConnTimeout:       90 * time.Second,
-		TLSHandshakeTimeout:   10 * time.Second,
-		ExpectContinueTimeout: 1 * time.Second,
 	}
 
 	for {
