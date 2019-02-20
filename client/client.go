@@ -143,7 +143,7 @@ func (c *Coordinator) doPush(resp *http.Response, origRequest *http.Request, cli
 func loop(c Coordinator, t *http.Transport) error {
 	client := &http.Client{
 		Transport: t,
-		Timeout: time.Duration(5) * time.Second,
+		Timeout: time.Duration(60) * time.Second,
 	}
 
 
@@ -233,7 +233,7 @@ func main() {
 
 	transport := &http.Transport {
 		TLSClientConfig: tlsConfig,
-				MaxIdleConnsPerHost: 10,
+		MaxIdleConnsPerHost: 10,
 	}
 
 	for {
